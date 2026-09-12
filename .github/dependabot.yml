@@ -1,0 +1,48 @@
+# Dependabot configuration.
+#
+# Version updates require this file; security updates run from the repository's settings and do not.
+#
+# THE REASON THIS REPOSITORY EXISTS is mostly the gomod block below. The exporter depends on twelve
+# collector modules published in TWO version series that move together on a fortnightly cadence
+# (v1.x for the stable APIs, v0.x for everything else), so a partial update does not merely lag - it
+# does not compile. `group-by: dependency-name` is wrong for that shape, because the series are
+# different dependencies that must still move as one; a single group over `*` is what keeps the
+# twelve in one pull request.
+#
+# In the monorepo this module was one directory among seven in a gomod block shaped around a
+# completely different coupling (seven modules sharing a `replace` on the service), and its collector
+# bumps arrived mixed in with grpc and viper bumps for the service.
+version: 2
+
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/hippocampusexporter"
+    schedule:
+      interval: "weekly"
+    # One PR can carry a dozen modules across two series, so the default limit of five would leave
+    # the set perpetually part-updated - the condition this block exists to avoid.
+    open-pull-requests-limit: 10
+    groups:
+      collector:
+        patterns:
+          - "*"
+
+  # The collector image's base images. Both float a minor tag (golang:1.27-alpine, alpine:3.24), so
+  # these are the only notice this repository gets that the base has moved.
+  - package-ecosystem: "docker"
+    directory: "/collector"
+    schedule:
+      interval: "weekly"
+    groups:
+      base-images:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns:
+          - "*"

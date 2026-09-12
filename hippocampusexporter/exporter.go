@@ -1,7 +1,7 @@
 // Copyright The Hippocampus Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package hippocampusexporter // import "github.com/fastbean-au/hippocampus/integrations/otel/hippocampusexporter"
+package hippocampusexporter // import "github.com/fastbean-au/hippocampus-otel-collector/hippocampusexporter"
 
 import (
 	"context"
@@ -457,7 +457,8 @@ func (e *hippoExporter) eventKey(attrs recordAttributes, ts time.Time) (string, 
 }
 
 // bearerTokenInterceptor stamps "authorization: Bearer <token>" onto every RPC, matching the
-// service's auth interceptor, mirroring integrations/mcp.
+// service's auth interceptor, mirroring the MCP bridge's (integrations/mcp in the hippocampus
+// repository).
 func bearerTokenInterceptor(token string) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req any, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "Bearer "+token)

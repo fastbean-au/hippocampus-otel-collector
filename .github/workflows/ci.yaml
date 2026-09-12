@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  exporter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: hippocampusexporter/go.mod
+
+      - name: Build
+        working-directory: hippocampusexporter
+        run: go build ./...
+
+      - name: Vet
+        working-directory: hippocampusexporter
+        run: go vet ./...
+
+      # The monorepo's otel-exporter job ran build/vet/test and no format check - only the root
+      # module's job did that, and it never descended into this module. Renaming the module on the
+      # way out reordered an import group and left a file unformatted, which is exactly the class of
+      # thing nothing here would have reported.
+      - name: Format
+        working-directory: hippocampusexporter
+        run: |
+          unformatted="$(gofmt -l .)"
+
+          if [ -n "$unformatted" ]; then
+            echo "::error::gofmt reports these files need formatting:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Test
+        working-directory: hippocampusexporter
+        run: go test ./...
+
+      # The module no longer carries a `replace` at the repository root, so it resolves
+      # github.com/fastbean-au/hippocampus from the module proxy like any other dependency. A tidy
+      # that changes go.mod or go.sum means the committed requirements disagree with the imports -
+      # which in the monorepo was masked by the replace, and out here would be a build that works
+      # only for whoever last ran tidy.
+      - name: go.mod is tidy
+        working-directory: hippocampusexporter
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+
+  # The collector image was built ONLY at release time in the monorepo, so an OCB or manifest break
+  # first surfaced in publish-otel-collector - after the tag existed. It is the single largest reason
+  # this repository is worth having, so it is built on every push.
+  #
+  # Single-platform here (the release builds amd64+arm64); the point is that OCB resolves the
+  # manifest, generates sources, and compiles a binary carrying the exporter.
+  collector-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build the collector image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: collector/Dockerfile
+          push: false
+          load: true
+          tags: hippocampus-otel-collector:ci
+
+      # Building proves it compiles; `components` proves the exporter is actually registered in the
+      # binary, which is what a manifest with a wrong module path or a stale replace would silently
+      # get wrong - the build succeeds and ships a collector that cannot export to Hippocampus.
+      - name: The built collector registers the hippocampus exporter
+        run: |
+          set -euo pipefail
+
+          docker run --rm --entrypoint hippocampus-otelcol \
+            hippocampus-otel-collector:ci components > components.yaml
+
+          cat components.yaml
+
+          grep -q 'name: hippocampus' components.yaml

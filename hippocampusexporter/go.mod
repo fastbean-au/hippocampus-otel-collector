@@ -1,9 +1,9 @@
-module github.com/fastbean-au/hippocampus/integrations/otel/hippocampusexporter
+module github.com/fastbean-au/hippocampus-otel-collector/hippocampusexporter
 
 go 1.27.0
 
 require (
-	github.com/fastbean-au/hippocampus v0.39.0
+	github.com/fastbean-au/hippocampus v0.47.0
 	github.com/stretchr/testify v1.12.1
 	go.opentelemetry.io/collector/component v1.66.0
 	go.opentelemetry.io/collector/component/componenttest v0.160.0
@@ -85,5 +85,3 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260831171406-18b4a7587f8a // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 )
-
-replace github.com/fastbean-au/hippocampus => ../../..

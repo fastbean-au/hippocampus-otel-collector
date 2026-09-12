@@ -1,10 +1,9 @@
 # Builds an OpenTelemetry Collector that ships the Hippocampus logs exporter, assembled with the
 # OpenTelemetry Collector Builder (OCB) from builder-config.yaml. The build context must be the
-# repository root: the builder manifest's `replaces:` point at the sibling exporter module
-# (integrations/otel/hippocampusexporter) and the repo-root contract module, so both must be present
-# in the context. Build from the repo root with:
+# repository root, because the builder manifest's `replaces:` points at the sibling exporter module
+# and it must be present in the context. Build from the repo root with:
 #
-#   docker build -f integrations/otel/collector/Dockerfile -t hippocampus-otel-collector .
+#   docker build -f collector/Dockerfile -t hippocampus-otel-collector .
 
 # Build on the native BUILDPLATFORM and cross-compile the collector to TARGETOS/TARGETARCH (CGO off),
 # so a multi-arch build never emulates the OCB toolchain under QEMU. TARGETOS/TARGETARCH come from
@@ -30,7 +29,7 @@ COPY . .
 # OCB generates sources under _build/ and compiles them; the relative replaces in the manifest
 # resolve against that generated go.mod, so it must run from the collector directory. CGO is off so
 # the binary runs on a minimal base image with no C library.
-WORKDIR /src/integrations/otel/collector
+WORKDIR /src/collector
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} builder --config builder-config.yaml
 
 FROM alpine:3.24 AS otel-collector
@@ -40,14 +39,14 @@ FROM alpine:3.24 AS otel-collector
 ARG VERSION=dev
 LABEL org.opencontainers.image.title="hippocampus-otel-collector" \
     org.opencontainers.image.version="${VERSION}" \
-    org.opencontainers.image.source="https://github.com/fastbean-au/hippocampus"
+    org.opencontainers.image.source="https://github.com/fastbean-au/hippocampus-otel-collector"
 
 RUN adduser -D -H -u 1000 otel
 
-COPY --from=build /src/integrations/otel/collector/_build/hippocampus-otelcol /usr/local/bin/hippocampus-otelcol
+COPY --from=build /src/collector/_build/hippocampus-otelcol /usr/local/bin/hippocampus-otelcol
 # The bundled config tails sample.log and ships to a local Hippocampus - a runnable demo default.
 # Mount your own config over /etc/otelcol/config.yaml (and adjust the CMD) for a real deployment.
-COPY integrations/otel/collector/config.yaml integrations/otel/collector/sample.log /etc/otelcol/
+COPY collector/config.yaml collector/sample.log /etc/otelcol/
 
 USER otel
 

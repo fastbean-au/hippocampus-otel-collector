@@ -10,7 +10,7 @@ import (
 
 var (
 	Type      = component.MustNewType("hippocampus")
-	ScopeName = "github.com/fastbean-au/hippocampus/integrations/otel/hippocampusexporter"
+	ScopeName = "github.com/fastbean-au/hippocampus-otel-collector/hippocampusexporter"
 )
 
 const (

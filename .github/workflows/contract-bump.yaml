@@ -1,0 +1,98 @@
+name: Contract bump
+
+# Raise github.com/fastbean-au/hippocampus when the service cuts a release, and open a PR.
+#
+# This exists because a satellite repository without one goes stale silently: hippocampus-gen pins
+# v0.36.1 and sits eleven releases behind for exactly this reason, and the exporter imports the
+# contract (`contract`) and `types`, so a stale pin means it is compiled against an old wire shape.
+# While this module lived in the monorepo a `replace` pointed it at the working tree and the question
+# never arose - which is also why its go.mod said v0.39.0 while the service was at v0.47.0 and
+# nothing noticed.
+on:
+  repository_dispatch:
+    types: [hippocampus-release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Service tag to require (e.g. v0.48.0)"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: hippocampusexporter/go.mod
+
+      # Validate the tag's shape before it reaches `go get`: an unvalidated payload field is
+      # attacker-influenced input in a job that opens a pull request.
+      - name: Resolve the service tag
+        run: |
+          set -euo pipefail
+
+          tag="${{ github.event.client_payload.tag || inputs.tag }}"
+
+          if ! printf '%s' "$tag" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::'$tag' is not a vX.Y.Z service tag"
+            exit 1
+          fi
+
+          echo "SERVICE_TAG=$tag" >> "$GITHUB_ENV"
+
+      - name: Raise the requirement
+        working-directory: hippocampusexporter
+        run: |
+          set -euo pipefail
+
+          go get "github.com/fastbean-au/hippocampus@${SERVICE_TAG}"
+          go mod tidy
+
+      - name: Check whether anything moved
+        id: diff
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "already on $SERVICE_TAG - nothing to do"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Build and test against the new contract before opening anything. The PR is worth opening
+      # either way - a red one is the notification that the contract moved under the exporter, which
+      # is the whole point - so the failure is recorded, not fatal.
+      - name: Build and test against the new contract
+        if: steps.diff.outputs.changed == 'true'
+        id: verify
+        continue-on-error: true
+        working-directory: hippocampusexporter
+        run: |
+          go build ./...
+          go vet ./...
+          go test ./...
+
+      - name: Open the bump pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: contract/${{ env.SERVICE_TAG }}
+          base: main
+          commit-message: "Require hippocampus ${{ env.SERVICE_TAG }}"
+          title: "Require hippocampus ${{ env.SERVICE_TAG }}"
+          body: |
+            Raised `github.com/fastbean-au/hippocampus` to
+            [`${{ env.SERVICE_TAG }}`](https://github.com/fastbean-au/hippocampus/releases/tag/${{ env.SERVICE_TAG }})
+            and tidied.
+
+            Build, vet and test against the new contract: **${{ steps.verify.outcome }}**.
+
+            A failure here is not noise — it means the contract or the `types` bounds moved under the
+            exporter, and it needs changing before this merges.
+          labels: contract
