@@ -1,5 +1,11 @@
 # hippocampus-otel-collector
 
+[![CI](https://github.com/fastbean-au/hippocampus-otel-collector/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/fastbean-au/hippocampus-otel-collector/actions/workflows/ci.yaml)
+![Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen)
+[![Known Vulnerabilities](https://snyk.io/test/github/fastbean-au/hippocampus-otel-collector/badge.svg)](https://snyk.io/test/github/fastbean-au/hippocampus-otel-collector)
+[![Go Reference](https://pkg.go.dev/badge/github.com/fastbean-au/hippocampus-otel-collector/hippocampusexporter.svg)](https://pkg.go.dev/github.com/fastbean-au/hippocampus-otel-collector/hippocampusexporter)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/fastbean-au/hippocampus-otel-collector?filename=hippocampusexporter%2Fgo.mod)
+
 An OpenTelemetry Collector **logs exporter** that writes each log record into
 [Hippocampus](https://github.com/fastbean-au/hippocampus) as a memory — and a ready-to-build
 collector distribution that ships it.

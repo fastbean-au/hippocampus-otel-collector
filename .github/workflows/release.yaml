@@ -40,6 +40,9 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: hippocampusexporter/go.mod
+          # The module is not at the repository root, so the default cache lookup finds no
+          # dependencies file and the restore is skipped with a warning on every run.
+          cache-dependency-path: hippocampusexporter/go.sum
 
       - name: Build, vet, and test
         working-directory: hippocampusexporter

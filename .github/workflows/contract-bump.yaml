@@ -31,6 +31,9 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: hippocampusexporter/go.mod
+          # The module is not at the repository root, so the default cache lookup finds no
+          # dependencies file and the restore is skipped with a warning on every run.
+          cache-dependency-path: hippocampusexporter/go.sum
 
       # Validate the tag's shape before it reaches `go get`: an unvalidated payload field is
       # attacker-influenced input in a job that opens a pull request.
@@ -82,6 +85,14 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
+          # GITHUB_TOKEN cannot open a pull request unless the repository has
+          # Settings -> Actions -> General -> "Allow GitHub Actions to create and approve pull
+          # requests" ticked, and even with it ticked a pull request it opens fires no
+          # `pull_request` event - so CI never runs on the bump, and the only verification is
+          # whatever this workflow reports inline. A PAT avoids both: it is the same token the
+          # service's release workflow dispatches with, plus Pull requests: write. Falls back
+          # to GITHUB_TOKEN when the secret is absent.
+          token: ${{ secrets.BUMP_PR_TOKEN || github.token }}
           branch: contract/${{ env.SERVICE_TAG }}
           base: main
           commit-message: "Require hippocampus ${{ env.SERVICE_TAG }}"
