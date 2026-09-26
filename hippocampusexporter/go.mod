@@ -17,7 +17,7 @@ require (
 	go.opentelemetry.io/collector/exporter/exportertest v0.161.0
 	go.opentelemetry.io/collector/pdata v1.67.0
 	go.uber.org/zap v1.28.0
-	google.golang.org/grpc v1.83.2
+	google.golang.org/grpc v1.84.0
 )
 
 require (
