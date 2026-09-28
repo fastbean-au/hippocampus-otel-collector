@@ -64,6 +64,13 @@ to diverge after that, and the module it requires is tracked separately —
 `github.com/fastbean-au/hippocampus` whenever the service cuts a release, carrying the build result
 against the new contract.
 
+The release is then cut **from that requirement rather than by hand**. When a raised pin lands on
+`main`, [`release-on-bump.yaml`](.github/workflows/release-on-bump.yaml) re-runs the build, vet and
+tests, tags the version the requirement names, and dispatches `Release`. That is what makes `vX.Y.Z`
+mean "built against service `vX.Y.Z`" instead of merely claiming to: the hand-cut `v0.48.0` was
+tagged before its own bump merged, so it requires `v0.47.0`. Merging the bump pull request is still
+the decision — nothing releases from a pin that has not been reviewed onto `main`.
+
 The import path changed with the move, to
 `github.com/fastbean-au/hippocampus-otel-collector/hippocampusexporter`. If you reference the
 exporter from your own OCB manifest, that is the line to update.
