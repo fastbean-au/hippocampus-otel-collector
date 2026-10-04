@@ -52,8 +52,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dustin/go-humanize v1.1.0 h1:dbKTrvD0klcbBV/h4AWJdMuZogJACoMlvWIWZ5b2xWg=
 github.com/dustin/go-humanize v1.1.0/go.mod h1:hc1CvRkJMsgxqjmjMQF3QNRAZBwY8AXBAzKYoSX9sFI=
-github.com/fastbean-au/hippocampus v0.51.0 h1:SPBWrjzUdfcPjKUw3ID1zHDYI/CiP34Us6L9S9sRS0A=
-github.com/fastbean-au/hippocampus v0.51.0/go.mod h1:U6XOlCjdkRhwlnOwo50K3sm+nD5ELnGGhv3GUr/F5JU=
+github.com/fastbean-au/hippocampus v0.51.1 h1:qdEowSXdY3z4C/L+zlr88nUTfH3OWZ6Jg6OT0zKp31g=
+github.com/fastbean-au/hippocampus v0.51.1/go.mod h1:U6XOlCjdkRhwlnOwo50K3sm+nD5ELnGGhv3GUr/F5JU=
 github.com/foxboron/go-tpm-keyfiles v0.0.0-20260427185012-515ba073c4c1 h1:/IDZxzpOhFdoDcVQT9Eaf2kY3grH5AUK+5MqoFq6Yng=
 github.com/foxboron/go-tpm-keyfiles v0.0.0-20260427185012-515ba073c4c1/go.mod h1:wxFx38LbEL4RF0JH6PR3lf7ZJ6ZO0yQWQstLCTQQNjA=
 github.com/fsnotify/fsnotify v1.10.1 h1:b0/UzAf9yR5rhf3RPm9gf3ehBPpf0oZKIjtpKrx59Ho=
