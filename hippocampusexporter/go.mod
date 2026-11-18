@@ -3,7 +3,7 @@ module github.com/fastbean-au/hippocampus-otel-collector/hippocampusexporter
 go 1.27.4
 
 require (
-	github.com/fastbean-au/hippocampus v0.54.0
+	github.com/fastbean-au/hippocampus v0.55.0
 	github.com/stretchr/testify v1.12.1
 	go.opentelemetry.io/collector/component v1.71.0
 	go.opentelemetry.io/collector/component/componenttest v0.165.0
